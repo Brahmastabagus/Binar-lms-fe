@@ -21,6 +21,24 @@ export const getTodo = createAsyncThunk("todo/getTodo", async () => {
   return json
 })
 
+export const setTodo = createAsyncThunk("todo/setTodo", async (data) => {
+  const cookies = new Cookies()
+  let token = cookies.get("token")
+  const response = await fetch(todoAPI,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    })
+
+  const json = await response.json()
+
+  return json
+})
+
 const todoEntity = createEntityAdapter({
   selectId: (todo) => todo.id
 })
@@ -42,6 +60,9 @@ const todoSlice = createSlice({
       })
       .addCase(getTodo.rejected, (state) => {
         state.status = "failed"
+      })
+      .addCase(setTodo.fulfilled, (state, action) => {
+        todoEntity.addOne(state, action.payload)
       })
   }
 })

@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { Badge, Button, Form, ListGroup, Modal, OverlayTrigger, Stack, Tooltip } from 'react-bootstrap'
 import { BsFillTrashFill, BsPencilSquare } from "react-icons/bs";
 import { useDispatch, useSelector } from 'react-redux';
-import { getTodo, todoSelector } from '../stores/todoSlice';
+import { getTodo, setTodo, todoSelector } from '../stores/todoSlice';
+import { ToastContainer, toast } from 'react-toastify';
+import Cookies from "universal-cookie";
+import jwtDecode from 'jwt-decode';
 // import PropTypes from 'prop-types';
 
 const Todolist = () => {
@@ -66,6 +69,73 @@ const Todolist = () => {
     setShowView(true)
     setViews({ ...data })
   };
+
+  const [formAdd, setFormAdd] = useState({})
+  const [loading, setLoading] = useState(false);
+
+  const handleAdd = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+
+    const cookies = new Cookies()
+    let token = cookies.get("token")
+    const id = jwtDecode(token).id
+
+    const res = await dispatch(setTodo({ ...formAdd, user_id: id }))
+
+    try {
+      if (res.payload.status == "success") {
+        await toast.success(`${res.payload.message}`, {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        })
+
+        setTimeout(() => {
+          setLoading(false)
+          setTimeout(() => {
+            dispatch(getTodo())
+            setShowAdd(false)
+          }, 1000);
+        }, 2000);
+      } else {
+        await toast.error(`${res.payload.message}`, {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        })
+
+        setTimeout(() => {
+          setLoading(false)
+        }, 2000);
+      }
+    } catch (err) {
+      await toast.error(`${err.status}`, {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      })
+      setLoading(false)
+      setTimeout(() => {
+        setShowAdd(false)
+      }, 1000);
+    }
+  }
 
   const Tooltips = (props) => (
     <OverlayTrigger
@@ -168,6 +238,7 @@ const Todolist = () => {
 
   return (
     <div className="container d-flex flex-column align-items-center vw-100 pt-3">
+      <ToastContainer />
       <div className="w-100 d-flex flex-column gap-1">
         <h1 className="text-center">My ToDo List</h1>
         <div className="d-flex justify-content-between gap-2">
@@ -190,17 +261,17 @@ const Todolist = () => {
             <Form>
               <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                 <Form.Label>Title</Form.Label>
-                <Form.Control type="text" placeholder="Reading the book" />
+                <Form.Control type="text" placeholder="Reading the book" onChange={(e) => setFormAdd({ ...formAdd, title: e.target.value })} />
               </Form.Group>
               <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
                 <Form.Label>To Do</Form.Label>
-                <Form.Control as="textarea" rows={3} placeholder='Reading the books mathematics...' />
+                <Form.Control as="textarea" rows={3} placeholder='Reading the books mathematics...' onChange={(e) => setFormAdd({ ...formAdd, desc: e.target.value })} />
               </Form.Group>
               <Form.Group className="mb-3" controlId="exampleForm.ControlInput2">
                 <Form.Label>Date</Form.Label>
-                <Form.Control type="date" />
+                <Form.Control type="date" onChange={(e) => setFormAdd({ ...formAdd, date: new Date(e.target.value) })} />
               </Form.Group>
-              <Form.Select style={{ width: "fit-content", height: "40px" }} aria-label="Choose priority">
+              <Form.Select style={{ width: "fit-content", height: "40px" }} aria-label="Choose priority" onChange={(e) => setFormAdd({ ...formAdd, priority: e.target.value })}>
                 <option value="all">All</option>
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
@@ -212,8 +283,8 @@ const Todolist = () => {
             <Button variant="secondary" onClick={handleCloseAdd}>
               Close
             </Button>
-            <Button variant="primary">
-              Save Changes
+            <Button disabled={loading} variant="primary" onClick={handleAdd}>
+              {loading ? "Loading..." : "Save Changes"}
             </Button>
           </Modal.Footer>
         </Modal>
