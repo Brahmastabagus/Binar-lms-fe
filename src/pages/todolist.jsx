@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Badge, Button, Form, ListGroup, Modal, OverlayTrigger, Stack, Tooltip } from 'react-bootstrap'
 import { BsFillTrashFill, BsPencilSquare } from "react-icons/bs";
 import { useDispatch, useSelector } from 'react-redux';
-import { getTodo, setTodo, todoSelector } from '../stores/todoSlice';
+import { getTodo, setCompletedTodo, setTodo, todoSelector } from '../stores/todoSlice';
 import { ToastContainer, toast } from 'react-toastify';
 import Cookies from "universal-cookie";
 import jwtDecode from 'jwt-decode';
@@ -30,12 +30,34 @@ const Todolist = () => {
   const [priority, setPriority] = useState("all");
   const [filterPriority, setFilterPriority] = useState([]);
 
-  const handleCheck = async (data) => {
-    setDatas((prevDatas) =>
-      prevDatas.map((check) =>
-        check === data ? { ...check, completed: !check.completed } : check
-      )
-    );
+  const handleCheck = async ({ id, title, completed }) => {
+    await dispatch(setCompletedTodo(id))
+    dispatch(getTodo())
+
+    if (completed == false) {
+      toast.success(`${title} is completed`, {
+        position: "top-center",
+        autoClose: 1500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    } else {
+      toast.warning(`${title} is not completed`, {
+        position: "top-center",
+        autoClose: 1500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+
+    }
   }
 
   const [showAdd, setShowAdd] = useState(false);

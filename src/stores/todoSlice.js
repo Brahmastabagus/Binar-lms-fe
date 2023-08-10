@@ -39,6 +39,23 @@ export const setTodo = createAsyncThunk("todo/setTodo", async (data) => {
   return json
 })
 
+export const setCompletedTodo = createAsyncThunk("todo/setCompletedTodo", async (id) => {
+  const cookies = new Cookies()
+  let token = cookies.get("token")
+  const response = await fetch(`${todoAPI}/completed/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    })
+
+  const json = await response.json()
+
+  return json
+})
+
 const todoEntity = createEntityAdapter({
   selectId: (todo) => todo.id
 })
@@ -63,6 +80,9 @@ const todoSlice = createSlice({
       })
       .addCase(setTodo.fulfilled, (state, action) => {
         todoEntity.addOne(state, action.payload)
+      })
+      .addCase(setCompletedTodo.fulfilled, (state, action) => {
+        todoEntity.updateOne(state, { id: action.payload.id, updates: action.payload })
       })
   }
 })
