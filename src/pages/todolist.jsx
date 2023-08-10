@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Badge, Button, Form, ListGroup, Modal, OverlayTrigger, Stack, Tooltip } from 'react-bootstrap'
 import { BsFillTrashFill, BsPencilSquare } from "react-icons/bs";
 import { useDispatch, useSelector } from 'react-redux';
-import { getTodo, setCompletedTodo, setTodo, todoSelector } from '../stores/todoSlice';
+import { deleteTodo, getTodo, setCompletedTodo, setTodo, todoSelector } from '../stores/todoSlice';
 import { ToastContainer, toast } from 'react-toastify';
 import Cookies from "universal-cookie";
 import jwtDecode from 'jwt-decode';
@@ -10,6 +10,8 @@ import jwtDecode from 'jwt-decode';
 
 const Todolist = () => {
   const [datas, setDatas] = useState([]);
+  const [formValue, setFormValue] = useState({});
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch()
   const { status } = useSelector(state => state.todoSlice)
   const todo = useSelector(todoSelector.selectAll)
@@ -72,6 +74,7 @@ const Todolist = () => {
   const handleShowDelete = (index) => {
     setShowDelete(true)
     setIdDelete(index)
+    console.log(index);
   };
 
   const [showUpdate, setShowUpdate] = useState(false);
@@ -92,9 +95,6 @@ const Todolist = () => {
     setViews({ ...data })
   };
 
-  const [formAdd, setFormAdd] = useState({})
-  const [loading, setLoading] = useState(false);
-
   const handleAdd = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -103,7 +103,7 @@ const Todolist = () => {
     let token = cookies.get("token")
     const id = jwtDecode(token).id
 
-    const res = await dispatch(setTodo({ ...formAdd, user_id: id }))
+    const res = await dispatch(setTodo({ ...formValue, user_id: id }))
 
     try {
       if (res.payload.status == "success") {
@@ -117,12 +117,75 @@ const Todolist = () => {
           progress: undefined,
           theme: "colored",
         })
+        dispatch(getTodo())
 
         setTimeout(() => {
           setLoading(false)
           setTimeout(() => {
-            dispatch(getTodo())
+            setFormValue({})
             setShowAdd(false)
+          }, 1000);
+        }, 2000);
+      } else {
+        await toast.error(`${res.payload.message}`, {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        })
+
+        setTimeout(() => {
+          setLoading(false)
+          setFormValue({})
+        }, 2000);
+      }
+    } catch (err) {
+      await toast.error(`${err.status}`, {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      })
+      setLoading(false)
+      setTimeout(() => {
+        setFormValue({})
+        setShowAdd(false)
+      }, 1000);
+    }
+  }
+
+  const handleDelete = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+
+    const res = await dispatch(deleteTodo(idDelete))
+
+    try {
+      if (res.payload.status == "success") {
+        await toast.success(`${res.payload.message}`, {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        })
+        dispatch(getTodo())
+
+        setTimeout(() => {
+          setLoading(false)
+          setTimeout(() => {
+            setShowDelete(false)
           }, 1000);
         }, 2000);
       } else {
@@ -154,7 +217,7 @@ const Todolist = () => {
       })
       setLoading(false)
       setTimeout(() => {
-        setShowAdd(false)
+        setShowDelete(false)
       }, 1000);
     }
   }
@@ -253,7 +316,7 @@ const Todolist = () => {
       },
       handleShowDelete: (e) => {
         e.stopPropagation()
-        handleShowDelete(index)
+        handleShowDelete(data?.id)
       }
     }
   }
@@ -275,30 +338,36 @@ const Todolist = () => {
           </Form.Select>
         </div>
 
-        <Modal show={showAdd} onHide={handleCloseAdd}>
+        <Modal
+          show={showAdd}
+          backdrop="static"
+          keyboard={false}>
           <Modal.Header closeButton>
             <Modal.Title>Create ToDo</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form>
-              <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+              <Form.Group className="mb-3" controlId="exampleForm.Title">
                 <Form.Label>Title</Form.Label>
-                <Form.Control type="text" placeholder="Reading the book" onChange={(e) => setFormAdd({ ...formAdd, title: e.target.value })} />
+                <Form.Control type="text" placeholder="Reading the book" onChange={(e) => setFormValue({ ...formValue, title: e.target.value })} />
               </Form.Group>
-              <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
+              <Form.Group className="mb-3" controlId="exampleForm.Todo">
                 <Form.Label>To Do</Form.Label>
-                <Form.Control as="textarea" rows={3} placeholder='Reading the books mathematics...' onChange={(e) => setFormAdd({ ...formAdd, desc: e.target.value })} />
+                <Form.Control as="textarea" rows={3} placeholder='Reading the books mathematics...' onChange={(e) => setFormValue({ ...formValue, desc: e.target.value })} />
               </Form.Group>
-              <Form.Group className="mb-3" controlId="exampleForm.ControlInput2">
+              <Form.Group className="mb-3" controlId="exampleForm.Date">
                 <Form.Label>Date</Form.Label>
-                <Form.Control type="date" onChange={(e) => setFormAdd({ ...formAdd, date: new Date(e.target.value) })} />
+                <Form.Control type="date" onChange={(e) => setFormValue({ ...formValue, date: new Date(e.target.value) })} />
               </Form.Group>
-              <Form.Select style={{ width: "fit-content", height: "40px" }} aria-label="Choose priority" onChange={(e) => setFormAdd({ ...formAdd, priority: e.target.value })}>
-                <option value="all">All</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </Form.Select>
+              <Form.Group className="mb-3" controlId="exampleForm.Priority">
+                <Form.Label>Priority</Form.Label>
+                <Form.Select style={{ width: "fit-content", height: "40px" }} aria-label="Choose priority" onChange={(e) => setFormValue({ ...formValue, priority: e.target.value })}>
+                  <option value="all">All</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </Form.Select>
+              </Form.Group>
             </Form>
           </Modal.Body>
           <Modal.Footer>
@@ -311,30 +380,43 @@ const Todolist = () => {
           </Modal.Footer>
         </Modal>
 
-        <Modal show={showUpdate} onHide={handleCloseUpdate}>
+        <Modal
+          show={showUpdate}
+          backdrop="static"
+          keyboard={false}>
           <Modal.Header closeButton>
             <Modal.Title>Update ToDo</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form>
-              <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+              <Form.Group className="mb-3" controlId="exampleForm.Title">
                 <Form.Label>Title</Form.Label>
-                <Form.Control value={dataupdate.title} type="text" placeholder="Mengerjakan tugas" />
+                <Form.Control
+                  value={dataupdate?.title}
+                  type="text"
+                  placeholder="Mengerjakan tugas" />
               </Form.Group>
-              <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
+              <Form.Group className="mb-3" controlId="exampleForm.Todo">
                 <Form.Label>To Do</Form.Label>
-                <Form.Control value={dataupdate.desc} as="textarea" rows={3} placeholder='Mengerjakan tugas Matematika...' />
+                <Form.Control
+                  value={dataupdate?.desc}
+                  as="textarea"
+                  rows={3}
+                  placeholder='Mengerjakan tugas Matematika...' />
               </Form.Group>
-              <Form.Group className="mb-3" controlId="exampleForm.ControlInput2">
-                <Form.Label>Title</Form.Label>
-                <Form.Control value={formatDate(dataupdate.date)} type="date" />
+              <Form.Group className="mb-3" controlId="exampleForm.Date">
+                <Form.Label>Date</Form.Label>
+                <Form.Control value={dataupdate?.date?.slice(0, 10)} type="date" />
               </Form.Group>
-              <Form.Select style={{ width: "fit-content", height: "40px" }} aria-label="Choose priority" value={dataupdate.priority}>
-                <option value="all">All</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </Form.Select>
+              <Form.Group className="mb-3" controlId="exampleForm.Priority">
+                <Form.Label>Priority</Form.Label>
+                <Form.Select style={{ width: "fit-content", height: "40px" }} aria-label="Choose priority" value={dataupdate?.priority}>
+                  <option value="all">All</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </Form.Select>
+              </Form.Group>
             </Form>
           </Modal.Body>
           <Modal.Footer>
@@ -397,17 +479,17 @@ const Todolist = () => {
 
         <Modal show={showDelete} onHide={handleCloseDelete}>
           <Modal.Header closeButton>
-            <Modal.Title>Create ToDo</Modal.Title>
+            <Modal.Title>Delete ToDo</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <p>Are you sure to delete this id {idDelete}?</p>
+            <p>This action is irreversible. Are you sure you want to proceed and delete it?</p>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseDelete}>
-              Close
+              Cancel
             </Button>
-            <Button variant="primary" onClick={handleCloseDelete}>
-              Save Changes
+            <Button variant="danger" onClick={handleDelete}>
+              Yes, Delete
             </Button>
           </Modal.Footer>
         </Modal>
