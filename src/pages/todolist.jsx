@@ -6,6 +6,7 @@ import { deleteTodo, getTodo, setCompletedTodo, setTodo, todoSelector, updateTod
 import { ToastContainer, toast } from 'react-toastify';
 import Cookies from "universal-cookie";
 import jwtDecode from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
 
 const Todolist = () => {
   const [datas, setDatas] = useState([]);
@@ -14,6 +15,9 @@ const Todolist = () => {
   const dispatch = useDispatch()
   const { status } = useSelector(state => state.todoSlice)
   const todo = useSelector(todoSelector.selectAll)
+  const cookies = new Cookies()
+  let token = cookies.get("token")
+  const decode = jwtDecode(token)
 
   useEffect(() => {
     dispatch(getTodo())
@@ -73,7 +77,6 @@ const Todolist = () => {
   const handleShowDelete = (index) => {
     setShowDelete(true)
     setIdDelete(index)
-    console.log(index);
   };
 
   const [showUpdate, setShowUpdate] = useState(false);
@@ -98,11 +101,7 @@ const Todolist = () => {
     e.preventDefault()
     setLoading(true)
 
-    const cookies = new Cookies()
-    let token = cookies.get("token")
-    const id = jwtDecode(token).id
-
-    const res = await dispatch(setTodo({ ...formValue, user_id: id }))
+    const res = await dispatch(setTodo({ ...formValue, user_id: decode.id }))
 
     try {
       if (res.payload.status == "success") {
@@ -259,6 +258,29 @@ const Todolist = () => {
     }
   }
 
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    cookies.remove("token", {
+      path: "/",
+      // expires: new Date(new Date().getTime() + 200 * 1000)
+    });
+    toast.danger("Anda Berhasil logout", {
+      position: "top-center",
+      autoClose: 1500,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
+    });
+
+    setTimeout(() => {
+      navigate("/")
+    }, 2000);
+    // window.location.replace('/')
+  }
+
   const Tooltips = (props) => (
     <OverlayTrigger
       placement='top'
@@ -362,7 +384,12 @@ const Todolist = () => {
     <div className="container d-flex flex-column align-items-center vw-100 pt-3">
       <ToastContainer />
       <div className="w-100 d-flex flex-column gap-1">
-        <h1 className="text-center">My ToDo List</h1>
+        <h1 className="text-center">{decode.name}{"'"}s ToDo List</h1>
+        <div className="d-flex justify-content-end">
+          <Button style={{ width: "fit-content" }} className="mb-2" variant="secondary" onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
         <div className="d-flex justify-content-between gap-2">
           <Button style={{ width: "fit-content" }} className="mb-2" variant="primary" onClick={handleShowAdd}>
             Create Todo
