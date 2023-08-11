@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react'
 import { Badge, Button, Form, ListGroup, Modal, OverlayTrigger, Stack, Tooltip } from 'react-bootstrap'
 import { BsFillTrashFill, BsPencilSquare } from "react-icons/bs";
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteTodo, getTodo, setCompletedTodo, setTodo, todoSelector } from '../stores/todoSlice';
+import { deleteTodo, getTodo, setCompletedTodo, setTodo, todoSelector, updateTodo } from '../stores/todoSlice';
 import { ToastContainer, toast } from 'react-toastify';
 import Cookies from "universal-cookie";
 import jwtDecode from 'jwt-decode';
-// import PropTypes from 'prop-types';
 
 const Todolist = () => {
   const [datas, setDatas] = useState([]);
@@ -117,15 +116,11 @@ const Todolist = () => {
           progress: undefined,
           theme: "colored",
         })
-        dispatch(getTodo())
 
-        setTimeout(() => {
-          setLoading(false)
-          setTimeout(() => {
-            setFormValue({})
-            setShowAdd(false)
-          }, 1000);
-        }, 2000);
+        dispatch(getTodo())
+        setLoading(false)
+        setFormValue({})
+        setShowAdd(false)
       } else {
         await toast.error(`${res.payload.message}`, {
           position: "top-center",
@@ -138,10 +133,63 @@ const Todolist = () => {
           theme: "colored",
         })
 
-        setTimeout(() => {
-          setLoading(false)
-          setFormValue({})
-        }, 2000);
+        setLoading(false)
+        setFormValue({})
+      }
+    } catch (err) {
+      await toast.error(`${err.status}`, {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      })
+
+      setLoading(false)
+      setFormValue({})
+      setShowAdd(false)
+    }
+  }
+
+  const handleUpdate = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+
+    const res = await dispatch(updateTodo({ ...formValue, id: dataupdate.id }))
+
+    try {
+      if (res.payload.status == "success") {
+        await toast.success(`${res.payload.message}`, {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        })
+        dispatch(getTodo())
+        setLoading(false)
+        setShowUpdate(false)
+        setFormValue({})
+      } else {
+        await toast.error(`${res.payload.message}`, {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        })
+
+        setLoading(false)
+        setFormValue({})
       }
     } catch (err) {
       await toast.error(`${err.status}`, {
@@ -155,10 +203,8 @@ const Todolist = () => {
         theme: "colored",
       })
       setLoading(false)
-      setTimeout(() => {
-        setFormValue({})
-        setShowAdd(false)
-      }, 1000);
+      setFormValue({})
+      setShowUpdate(false)
     }
   }
 
@@ -181,13 +227,8 @@ const Todolist = () => {
           theme: "colored",
         })
         dispatch(getTodo())
-
-        setTimeout(() => {
-          setLoading(false)
-          setTimeout(() => {
-            setShowDelete(false)
-          }, 1000);
-        }, 2000);
+        setLoading(false)
+        setShowDelete(false)
       } else {
         await toast.error(`${res.payload.message}`, {
           position: "top-center",
@@ -200,9 +241,7 @@ const Todolist = () => {
           theme: "colored",
         })
 
-        setTimeout(() => {
-          setLoading(false)
-        }, 2000);
+        setLoading(false)
       }
     } catch (err) {
       await toast.error(`${err.status}`, {
@@ -216,9 +255,7 @@ const Todolist = () => {
         theme: "colored",
       })
       setLoading(false)
-      setTimeout(() => {
-        setShowDelete(false)
-      }, 1000);
+      setShowDelete(false)
     }
   }
 
@@ -392,25 +429,38 @@ const Todolist = () => {
               <Form.Group className="mb-3" controlId="exampleForm.Title">
                 <Form.Label>Title</Form.Label>
                 <Form.Control
-                  value={dataupdate?.title}
+                  defaultValue={dataupdate?.title}
                   type="text"
-                  placeholder="Mengerjakan tugas" />
+                  placeholder="Mengerjakan tugas"
+                  onChange={e => setFormValue({ ...formValue, title: e.target.value })}
+                />
               </Form.Group>
               <Form.Group className="mb-3" controlId="exampleForm.Todo">
                 <Form.Label>To Do</Form.Label>
                 <Form.Control
-                  value={dataupdate?.desc}
+                  defaultValue={dataupdate?.desc}
                   as="textarea"
                   rows={3}
-                  placeholder='Mengerjakan tugas Matematika...' />
+                  placeholder='Mengerjakan tugas Matematika...'
+                  onChange={e => setFormValue({ ...formValue, desc: e.target.value })}
+                />
               </Form.Group>
               <Form.Group className="mb-3" controlId="exampleForm.Date">
                 <Form.Label>Date</Form.Label>
-                <Form.Control value={dataupdate?.date?.slice(0, 10)} type="date" />
+                <Form.Control
+                  defaultValue={dataupdate?.date?.slice(0, 10)}
+                  type="date"
+                  onChange={e => setFormValue({ ...formValue, date: e.target.value })}
+                />
               </Form.Group>
               <Form.Group className="mb-3" controlId="exampleForm.Priority">
                 <Form.Label>Priority</Form.Label>
-                <Form.Select style={{ width: "fit-content", height: "40px" }} aria-label="Choose priority" value={dataupdate?.priority}>
+                <Form.Select
+                  style={{ width: "fit-content", height: "40px" }}
+                  aria-label="Choose priority"
+                  defaultValue={dataupdate?.priority}
+                  onChange={e => setFormValue({ ...formValue, priority: e.target.value })}
+                >
                   <option value="all">All</option>
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -421,9 +471,9 @@ const Todolist = () => {
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseUpdate}>
-              Close
+              Cancel
             </Button>
-            <Button variant="primary" onClick={handleCloseUpdate}>
+            <Button variant="info" onClick={handleUpdate}>
               Save Changes
             </Button>
           </Modal.Footer>
