@@ -17,7 +17,7 @@ export const getLogin = createAsyncThunk("login/getLogin", async (data) => {
 })
 
 const loginEntity = createEntityAdapter({
-  selectId: (login) => login.id
+  selectId: (login) => login
 })
 
 const loginSlice = createSlice({
