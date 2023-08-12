@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Badge, Button, Form, ListGroup, Modal, Stack } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteTodo, getTodo, setCompletedTodo, setTodo, todoSelector, updateTodo } from '../stores/todoSlice';
+import { deleteTodo, getTodo, setTodo, todoSelector, updateTodo } from '../stores/todoSlice';
 import { ToastContainer, toast } from 'react-toastify';
 import Cookies from "universal-cookie";
 import jwtDecode from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import ModalView from '../components/ModalView';
 import List from '../components/List';
+import { handleCloseView, handleShowView } from '../utils/views';
+import { handleCheck } from '../utils/handleCheck';
 
 const Todolist = () => {
   const [datas, setDatas] = useState([]);
@@ -30,36 +32,6 @@ const Todolist = () => {
 
   const [priority, setPriority] = useState("all");
   const [filterPriority, setFilterPriority] = useState([]);
-
-  const handleCheck = async ({ id, title, completed }) => {
-    await dispatch(setCompletedTodo(id))
-    dispatch(getTodo())
-
-    if (completed == false) {
-      toast.success(`${title} is completed`, {
-        position: "top-center",
-        autoClose: 1500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    } else {
-      toast.warning(`${title} is not completed`, {
-        position: "top-center",
-        autoClose: 1500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-
-    }
-  }
 
   const [showAdd, setShowAdd] = useState(false);
 
@@ -85,12 +57,6 @@ const Todolist = () => {
   };
 
   const [showView, setShowView] = useState(false);
-
-  const handleCloseView = () => setShowView(false);
-  const handleShowView = (data) => {
-    setShowView(true)
-    setSelectData({ ...data })
-  };
 
   const handleAdd = async (e) => {
     e.preventDefault()
@@ -284,8 +250,8 @@ const Todolist = () => {
     return {
       data: data,
       id: index,
-      handleCheck: () => handleCheck(data),
-      handleShowView: () => data?.completed ? false : handleShowView(data),
+      handleCheck: () => handleCheck(data, dispatch),
+      handleShowView: () => data?.completed ? false : handleShowView(data, setShowView, setSelectData),
       handleShowUpdate: (e) => {
         e.stopPropagation()
         data?.completed ? false : handleShowUpdate(data)
@@ -488,7 +454,7 @@ const Todolist = () => {
           </Modal.Footer>
         </Modal>
 
-        <ModalView show={showView} onHide={handleCloseView} views={selectData} size='xl' />
+        <ModalView show={showView} onHide={() => handleCloseView(setShowView)} views={selectData} size='xl' />
       </div>
     </div>
   )
