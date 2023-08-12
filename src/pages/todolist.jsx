@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Badge, Button, Form, ListGroup, Modal, Stack } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteTodo, getTodo, setTodo, todoSelector, updateTodo } from '../stores/todoSlice';
+import { deleteTodo, getTodo, todoSelector, updateTodo } from '../stores/todoSlice';
 import { ToastContainer, toast } from 'react-toastify';
 import Cookies from "universal-cookie";
 import jwtDecode from 'jwt-decode';
@@ -10,6 +10,8 @@ import ModalView from '../components/ModalView';
 import List from '../components/List';
 import { handleCloseView, handleShowView } from '../utils/views';
 import { handleCheck } from '../utils/handleCheck';
+import { handleShowAdd } from '../utils/add';
+import ModalAdd from '../components/ModalAdd';
 
 const Todolist = () => {
   const [datas, setDatas] = useState([]);
@@ -35,9 +37,6 @@ const Todolist = () => {
 
   const [showAdd, setShowAdd] = useState(false);
 
-  const handleCloseAdd = () => setShowAdd(false);
-  const handleShowAdd = () => setShowAdd(true);
-
   const [showDelete, setShowDelete] = useState(false);
   const [idDelete, setIdDelete] = useState(0);
 
@@ -57,59 +56,6 @@ const Todolist = () => {
   };
 
   const [showView, setShowView] = useState(false);
-
-  const handleAdd = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-
-    const res = await dispatch(setTodo({ ...formValue, user_id: decode.id }))
-
-    try {
-      if (res.payload.status == "success") {
-        await toast.success(`${res.payload.message}`, {
-          position: "top-center",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        })
-
-        dispatch(getTodo())
-        setLoading(false)
-        setShowAdd(false)
-      } else {
-        await toast.error(`${res.payload.message}`, {
-          position: "top-center",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        })
-
-        setLoading(false)
-      }
-    } catch (err) {
-      await toast.error(`${err.status}`, {
-        position: "top-center",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      })
-
-      setLoading(false)
-      setShowAdd(false)
-    }
-  }
 
   const handleUpdate = async (e) => {
     e.preventDefault()
@@ -274,7 +220,7 @@ const Todolist = () => {
           </Button>
         </div>
         <div className="d-flex justify-content-between gap-2">
-          <Button style={{ width: "fit-content" }} className="mb-2" variant="primary" onClick={handleShowAdd}>
+          <Button style={{ width: "fit-content" }} className="mb-2" variant="primary" onClick={() => handleShowAdd(setShowAdd)}>
             Create Todo
           </Button>
           <Form.Select style={{ width: "fit-content", height: "40px" }} aria-label="Choose priority" onChange={(e) => setPriority(e.target.value)}>
@@ -285,53 +231,22 @@ const Todolist = () => {
           </Form.Select>
         </div>
 
-        <Modal
+        <ModalAdd
           show={showAdd}
-          backdrop="static"
-          keyboard={false}>
-          <Modal.Header closeButton>
-            <Modal.Title>Create ToDo</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group className="mb-3" controlId="exampleForm.Title">
-                <Form.Label>Title</Form.Label>
-                <Form.Control type="text" placeholder="Reading the book" onChange={(e) => setFormValue({ ...formValue, title: e.target.value })} />
-              </Form.Group>
-              <Form.Group className="mb-3" controlId="exampleForm.Todo">
-                <Form.Label>To Do</Form.Label>
-                <Form.Control as="textarea" rows={3} placeholder='Reading the books mathematics...' onChange={(e) => setFormValue({ ...formValue, desc: e.target.value })} />
-              </Form.Group>
-              <Form.Group className="mb-3" controlId="exampleForm.Date">
-                <Form.Label>Date</Form.Label>
-                <Form.Control type="date" onChange={(e) => setFormValue({ ...formValue, date: new Date(e.target.value) })} />
-              </Form.Group>
-              <Form.Group className="mb-3" controlId="exampleForm.Priority">
-                <Form.Label>Priority</Form.Label>
-                <Form.Select style={{ width: "fit-content", height: "40px" }} aria-label="Choose priority" onChange={(e) => setFormValue({ ...formValue, priority: e.target.value })}>
-                  <option value="all">All</option>
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
-                </Form.Select>
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseAdd}>
-              Close
-            </Button>
-            <Button disabled={loading} variant="primary" onClick={handleAdd}>
-              {loading ? "Loading..." : "Save Changes"}
-            </Button>
-          </Modal.Footer>
-        </Modal>
+          setFormValue={setFormValue}
+          formValue={formValue}
+          loading={loading}
+          setLoading={setLoading}
+          setShowAdd={setShowAdd}
+          decode={decode}
+          dispatch={dispatch}
+        />
 
         <Modal
           show={showUpdate}
           backdrop="static"
           keyboard={false}>
-          <Modal.Header closeButton>
+          <Modal.Header>
             <Modal.Title>Update ToDo</Modal.Title>
           </Modal.Header>
           <Modal.Body>
