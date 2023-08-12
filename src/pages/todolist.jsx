@@ -7,6 +7,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import Cookies from "universal-cookie";
 import jwtDecode from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
+import choosePriority from '../utils/choosePriority';
+import formatDate from '../utils/formatDate';
+import ModalView from '../components/ModalView';
 
 const Todolist = () => {
   const [datas, setDatas] = useState([]);
@@ -26,11 +29,6 @@ const Todolist = () => {
   useEffect(() => {
     setDatas(Object.values(todo))
   }, [todo])
-
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  const formatDate = (date) => {
-    return new Date(date)?.toLocaleDateString("id-Id", options)
-  }
 
   const [priority, setPriority] = useState("all");
   const [filterPriority, setFilterPriority] = useState([]);
@@ -82,19 +80,18 @@ const Todolist = () => {
   const [showUpdate, setShowUpdate] = useState(false);
 
   const handleCloseUpdate = () => setShowUpdate(false);
-  const [dataupdate, setDataUpdate] = useState({});
+  const [selectData, setSelectData] = useState({});
   const handleShowUpdate = (data) => {
     setShowUpdate(true)
-    setDataUpdate({ ...data })
+    setSelectData({ ...data })
   };
 
   const [showView, setShowView] = useState(false);
-  const [views, setViews] = useState({});
 
   const handleCloseView = () => setShowView(false);
   const handleShowView = (data) => {
     setShowView(true)
-    setViews({ ...data })
+    setSelectData({ ...data })
   };
 
   const handleAdd = async (e) => {
@@ -118,7 +115,6 @@ const Todolist = () => {
 
         dispatch(getTodo())
         setLoading(false)
-        setFormValue({})
         setShowAdd(false)
       } else {
         await toast.error(`${res.payload.message}`, {
@@ -133,7 +129,6 @@ const Todolist = () => {
         })
 
         setLoading(false)
-        setFormValue({})
       }
     } catch (err) {
       await toast.error(`${err.status}`, {
@@ -148,7 +143,6 @@ const Todolist = () => {
       })
 
       setLoading(false)
-      setFormValue({})
       setShowAdd(false)
     }
   }
@@ -157,7 +151,7 @@ const Todolist = () => {
     e.preventDefault()
     setLoading(true)
 
-    const res = await dispatch(updateTodo({ ...formValue, id: dataupdate.id }))
+    const res = await dispatch(updateTodo({ ...formValue, id: selectData.id }))
 
     try {
       if (res.payload.status == "success") {
@@ -174,7 +168,6 @@ const Todolist = () => {
         dispatch(getTodo())
         setLoading(false)
         setShowUpdate(false)
-        setFormValue({})
       } else {
         await toast.error(`${res.payload.message}`, {
           position: "top-center",
@@ -188,7 +181,6 @@ const Todolist = () => {
         })
 
         setLoading(false)
-        setFormValue({})
       }
     } catch (err) {
       await toast.error(`${err.status}`, {
@@ -202,7 +194,6 @@ const Todolist = () => {
         theme: "colored",
       })
       setLoading(false)
-      setFormValue({})
       setShowUpdate(false)
     }
   }
@@ -264,7 +255,7 @@ const Todolist = () => {
       path: "/",
       // expires: new Date(new Date().getTime() + 200 * 1000)
     });
-    toast.danger("Anda Berhasil logout", {
+    toast.danger("You have successfully logged out", {
       position: "top-center",
       autoClose: 1500,
       hideProgressBar: true,
@@ -295,28 +286,6 @@ const Todolist = () => {
       </div>
     </OverlayTrigger>
   );
-
-  const choosePriority = (priority) => {
-    switch (priority) {
-      case "high":
-        priority = "danger"
-        break;
-
-      case "medium":
-        priority = "info"
-        break;
-
-      case "low":
-        priority = "warning"
-        break;
-
-      default:
-        priority = "light"
-        break;
-    }
-
-    return priority
-  }
 
   const List = ({ data, id, handleCheck, handleShowView, handleShowUpdate, handleShowDelete }) => {
     return (
@@ -456,7 +425,7 @@ const Todolist = () => {
               <Form.Group className="mb-3" controlId="exampleForm.Title">
                 <Form.Label>Title</Form.Label>
                 <Form.Control
-                  defaultValue={dataupdate?.title}
+                  defaultValue={selectData?.title}
                   type="text"
                   placeholder="Mengerjakan tugas"
                   onChange={e => setFormValue({ ...formValue, title: e.target.value })}
@@ -465,7 +434,7 @@ const Todolist = () => {
               <Form.Group className="mb-3" controlId="exampleForm.Todo">
                 <Form.Label>To Do</Form.Label>
                 <Form.Control
-                  defaultValue={dataupdate?.desc}
+                  defaultValue={selectData?.desc}
                   as="textarea"
                   rows={3}
                   placeholder='Mengerjakan tugas Matematika...'
@@ -475,7 +444,7 @@ const Todolist = () => {
               <Form.Group className="mb-3" controlId="exampleForm.Date">
                 <Form.Label>Date</Form.Label>
                 <Form.Control
-                  defaultValue={dataupdate?.date?.slice(0, 10)}
+                  defaultValue={selectData?.date?.slice(0, 10)}
                   type="date"
                   onChange={e => setFormValue({ ...formValue, date: e.target.value })}
                 />
@@ -485,7 +454,7 @@ const Todolist = () => {
                 <Form.Select
                   style={{ width: "fit-content", height: "40px" }}
                   aria-label="Choose priority"
-                  defaultValue={dataupdate?.priority}
+                  defaultValue={selectData?.priority}
                   onChange={e => setFormValue({ ...formValue, priority: e.target.value })}
                 >
                   <option value="all">All</option>
@@ -571,19 +540,7 @@ const Todolist = () => {
           </Modal.Footer>
         </Modal>
 
-        <Modal show={showView} onHide={handleCloseView} size='xl'>
-          <Modal.Header closeButton>
-            <Modal.Title>View ToDo</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <div className="d-flex align-items-center justify-content-between w-100 pe-2">
-              <h4>{views?.title}</h4>
-              <Badge bg={choosePriority(views?.priority)}>{views?.priority?.toUpperCase()}</Badge>
-            </div>
-            <p className="lead">{views?.desc}</p>
-            <h5 className="mt-2 text-secondary">{`${formatDate(views?.date)}`}</h5>
-          </Modal.Body>
-        </Modal>
+        <ModalView show={showView} onHide={handleCloseView} views={selectData} size='xl' />
       </div>
     </div>
   )
