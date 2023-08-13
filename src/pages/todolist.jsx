@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Badge, Button, Form, ListGroup, Modal, Stack } from 'react-bootstrap'
+import { Badge, Button, Form, ListGroup, Stack } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteTodo, getTodo, todoSelector } from '../stores/todoSlice';
+import { getTodo, todoSelector } from '../stores/todoSlice';
 import { ToastContainer, toast } from 'react-toastify';
 import Cookies from "universal-cookie";
 import jwtDecode from 'jwt-decode';
@@ -14,6 +14,8 @@ import { handleShowAdd } from '../utils/add';
 import ModalAdd from '../components/ModalAdd';
 import { handleShowUpdate } from '../utils/update';
 import ModalUpdate from '../components/ModalUpdate';
+import { handleShowDelete } from '../utils/delete';
+import ModalDelete from '../components/ModalDelete';
 
 const Todolist = () => {
   const [datas, setDatas] = useState([]);
@@ -43,66 +45,9 @@ const Todolist = () => {
   const [showDelete, setShowDelete] = useState(false);
   const [idDelete, setIdDelete] = useState(0);
 
-  const handleCloseDelete = () => setShowDelete(false);
-  const handleShowDelete = (index) => {
-    setShowDelete(true)
-    setIdDelete(index)
-  };
-
   const [showUpdate, setShowUpdate] = useState(false);
 
   const [showView, setShowView] = useState(false);
-
-  const handleDelete = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-
-    const res = await dispatch(deleteTodo(idDelete))
-
-    try {
-      if (res.payload.status == "success") {
-        await toast.success(`${res.payload.message}`, {
-          position: "top-center",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        })
-        dispatch(getTodo())
-        setLoading(false)
-        setShowDelete(false)
-      } else {
-        await toast.error(`${res.payload.message}`, {
-          position: "top-center",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        })
-
-        setLoading(false)
-      }
-    } catch (err) {
-      await toast.error(`${err.status}`, {
-        position: "top-center",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      })
-      setLoading(false)
-      setShowDelete(false)
-    }
-  }
 
   const navigate = useNavigate()
   const handleLogout = () => {
@@ -149,7 +94,7 @@ const Todolist = () => {
       },
       handleShowDelete: (e) => {
         e.stopPropagation()
-        handleShowDelete(data?.id)
+        handleShowDelete(data?.id, setShowDelete, setIdDelete)
       }
     }
   }
@@ -246,22 +191,14 @@ const Todolist = () => {
           <Badge bg="warning" text="dark">Low</Badge>
         </Stack>
 
-        <Modal show={showDelete} onHide={handleCloseDelete}>
-          <Modal.Header closeButton>
-            <Modal.Title>Delete ToDo</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p>This action is irreversible. Are you sure you want to proceed and delete it?</p>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseDelete}>
-              Cancel
-            </Button>
-            <Button variant="danger" onClick={handleDelete}>
-              Yes, Delete
-            </Button>
-          </Modal.Footer>
-        </Modal>
+        <ModalDelete
+          show={showDelete}
+          idDelete={idDelete}
+          loading={loading}
+          setLoading={setLoading}
+          setShowDelete={setShowDelete}
+          dispatch={dispatch}
+        />
 
         <ModalView
           show={showView}
