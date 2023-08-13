@@ -8,14 +8,13 @@ import jwtDecode from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import ModalView from '../components/ModalView';
 import List from '../components/List';
-import { handleCloseView, handleShowView } from '../utils/views';
-import { handleCheck } from '../utils/handleCheck';
+import { handleCloseView } from '../utils/views';
 import { handleShowAdd } from '../utils/add';
 import ModalAdd from '../components/ModalAdd';
-import { handleShowUpdate } from '../utils/update';
 import ModalUpdate from '../components/ModalUpdate';
-import { handleShowDelete } from '../utils/delete';
 import ModalDelete from '../components/ModalDelete';
+import attributes from '../constants/attributes';
+import Loading from '../components/Loading';
 
 const Todolist = () => {
   const [datas, setDatas] = useState([]);
@@ -82,23 +81,6 @@ const Todolist = () => {
     filteredPriority()
   }, [priority, datas])
 
-  const attributes = (data, index) => {
-    return {
-      data: data,
-      id: index,
-      handleCheck: () => handleCheck(data, dispatch),
-      handleShowView: () => data?.completed ? false : handleShowView(data, setShowView, setSelectData),
-      handleShowUpdate: (e) => {
-        e.stopPropagation()
-        data?.completed ? false : handleShowUpdate(data, setShowUpdate, setSelectData)
-      },
-      handleShowDelete: (e) => {
-        e.stopPropagation()
-        handleShowDelete(data?.id, setShowDelete, setIdDelete)
-      }
-    }
-  }
-
   return (
     <div className="container d-flex flex-column align-items-center vw-100 pt-3">
       <ToastContainer />
@@ -151,7 +133,7 @@ const Todolist = () => {
                 ?
                 datas.map((data, index) => {
                   return (
-                    <List key={index} {...attributes(data, index)} />
+                    <List key={index} {...attributes(data, index, dispatch, setShowView, setSelectData, setShowUpdate, setShowDelete, setIdDelete)} />
                   )
                 })
                 :
@@ -159,7 +141,7 @@ const Todolist = () => {
                   ?
                   filterPriority.map((data, index) => {
                     return (
-                      <List key={index} {...attributes(data, index)} />
+                      <List key={index} {...attributes(data, index, dispatch, setShowView, setSelectData, setShowUpdate, setShowDelete, setIdDelete)} />
                     )
                   })
                   :
@@ -170,17 +152,7 @@ const Todolist = () => {
                   )
               :
               (
-                <Stack direction="horizontal" className="py-5 mx-auto" gap={2}>
-                  <div className="spinner-grow text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                  <div className="spinner-grow text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                  <div className="spinner-grow text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                </Stack>
+                <Loading />
               )
           }
         </ListGroup>
