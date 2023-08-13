@@ -1,4 +1,4 @@
-export const optionToast = {
+const optionToast = {
   position: "top-center",
   autoClose: 1500,
   hideProgressBar: false,
@@ -8,3 +8,5 @@ export const optionToast = {
   progress: undefined,
   theme: "colored",
 }
+
+export default optionToast

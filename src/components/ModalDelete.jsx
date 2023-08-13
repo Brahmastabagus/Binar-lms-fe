@@ -11,7 +11,7 @@ const ModalDelete = ({ show, idDelete, loading, setLoading, setShowDelete, dispa
         <p>This action is irreversible. Are you sure you want to proceed and delete it?</p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleCloseDelete}>
+        <Button variant="secondary" onClick={() => handleCloseDelete(setShowDelete)}>
           Cancel
         </Button>
         <Button disabled={loading} variant="danger" onClick={() => handleDelete(setLoading, dispatch, idDelete, setShowDelete)}>

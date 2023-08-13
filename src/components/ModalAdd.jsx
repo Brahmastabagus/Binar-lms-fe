@@ -14,11 +14,11 @@ const ModalAdd = ({ show, setFormValue, formValue, loading, setLoading, setShowA
         <Form>
           <Form.Group className="mb-3" controlId="exampleForm.Title">
             <Form.Label>Title</Form.Label>
-            <Form.Control type="text" placeholder="Reading the book" onChange={(e) => setFormValue({ ...formValue, title: e.target.value })} />
+            <Form.Control type="text" placeholder="Go shopping for vegetables at the market." onChange={(e) => setFormValue({ ...formValue, title: e.target.value })} />
           </Form.Group>
           <Form.Group className="mb-3" controlId="exampleForm.Todo">
             <Form.Label>To Do</Form.Label>
-            <Form.Control as="textarea" rows={3} placeholder='Reading the books mathematics...' onChange={(e) => setFormValue({ ...formValue, desc: e.target.value })} />
+            <Form.Control as="textarea" rows={3} placeholder='Buy tomatoes, carrots, and spinach for dinner. Make sure to choose fresh...' onChange={(e) => setFormValue({ ...formValue, desc: e.target.value })} />
           </Form.Group>
           <Form.Group className="mb-3" controlId="exampleForm.Date">
             <Form.Label>Date</Form.Label>

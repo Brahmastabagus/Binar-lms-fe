@@ -1,6 +1,6 @@
 import { toast } from "react-toastify";
 import { getTodo, setTodo } from "../stores/todoSlice";
-import { optionToast } from "../constants/optionToast";
+import optionToast from "../constants/optionToast";
 
 export const handleCloseAdd = (setShowAdd) => setShowAdd(false);
 export const handleShowAdd = (setShowAdd) => setShowAdd(true);

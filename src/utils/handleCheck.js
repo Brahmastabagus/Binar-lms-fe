@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import { optionToast } from "../constants/optionToast";
+import optionToast from "../constants/optionToast";
 import { getTodo, setCompletedTodo } from "../stores/todoSlice";
 
 export const handleCheck = async ({ id, title, completed }, dispatch) => {
