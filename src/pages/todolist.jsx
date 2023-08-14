@@ -1,75 +1,44 @@
 import { useEffect, useState } from 'react'
-import { Badge, Button, Form, ListGroup, Stack } from 'react-bootstrap'
-import { useDispatch, useSelector } from 'react-redux';
-import { getTodo, todoSelector } from '../stores/todoSlice';
-import { ToastContainer, toast } from 'react-toastify';
+import { Badge, Form, ListGroup, Stack } from 'react-bootstrap'
+import { useDispatch } from 'react-redux';
+import { ToastContainer } from 'react-toastify';
 import Cookies from "universal-cookie";
 import jwtDecode from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import ModalView from '../components/ModalView';
 import List from '../components/List';
 import { handleCloseView } from '../utils/views';
-import { handleShowAdd } from '../utils/add';
 import ModalAdd from '../components/ModalAdd';
 import ModalUpdate from '../components/ModalUpdate';
 import ModalDelete from '../components/ModalDelete';
-import attributes from '../constants/attributes';
+import attributes from '../utils/attributes';
 import Loading from '../components/Loading';
+import { useTodo } from '../hooks/useTodo';
+import Button from '../components/Button';
 
 const Todolist = () => {
-  const [datas, setDatas] = useState([]);
-  const [formValue, setFormValue] = useState({});
-  const [selectData, setSelectData] = useState({});
-  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch()
-  const { status } = useSelector(state => state.todoSlice)
-  const todo = useSelector(todoSelector.selectAll)
+  const navigate = useNavigate()
   const cookies = new Cookies()
   let token = cookies.get("token")
   const decode = jwtDecode(token)
 
-  useEffect(() => {
-    dispatch(getTodo())
-  }, [dispatch])
+  const [status, todo] = useTodo(dispatch)
+  const [datas, setDatas] = useState([]);
+  const [formValue, setFormValue] = useState({});
+  const [selectData, setSelectData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [priority, setPriority] = useState("all");
+  const [filterPriority, setFilterPriority] = useState([]);
+  const [idDelete, setIdDelete] = useState(0);
+  const [showAdd, setShowAdd] = useState(false);
+  const [showUpdate, setShowUpdate] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [showView, setShowView] = useState(false);
 
   useEffect(() => {
     setDatas(Object.values(todo))
   }, [todo])
-
-  const [priority, setPriority] = useState("all");
-  const [filterPriority, setFilterPriority] = useState([]);
-
-  const [showAdd, setShowAdd] = useState(false);
-
-  const [showDelete, setShowDelete] = useState(false);
-  const [idDelete, setIdDelete] = useState(0);
-
-  const [showUpdate, setShowUpdate] = useState(false);
-
-  const [showView, setShowView] = useState(false);
-
-  const navigate = useNavigate()
-  const handleLogout = () => {
-    cookies.remove("token", {
-      path: "/",
-      // expires: new Date(new Date().getTime() + 200 * 1000)
-    });
-    toast.danger("You have successfully logged out", {
-      position: "top-center",
-      autoClose: 1500,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "colored",
-    });
-
-    setTimeout(() => {
-      navigate("/")
-    }, 2000);
-    // window.location.replace('/')
-  }
 
   useEffect(() => {
     const filteredPriority = () => {
@@ -87,14 +56,10 @@ const Todolist = () => {
       <div className="w-100 d-flex flex-column gap-1">
         <h1 className="text-center">{decode.name}{"'"}s ToDo List</h1>
         <div className="d-flex justify-content-end">
-          <Button style={{ width: "fit-content" }} className="mb-2" variant="secondary" onClick={handleLogout}>
-            Logout
-          </Button>
+          <Button.Logout cookies={cookies} navigate={navigate}>Logout</Button.Logout>
         </div>
         <div className="d-flex justify-content-between gap-2">
-          <Button style={{ width: "fit-content" }} className="mb-2" variant="primary" onClick={() => handleShowAdd(setShowAdd)}>
-            Create Todo
-          </Button>
+          <Button.Create setShowAdd={setShowAdd}>Create Todo</Button.Create>
           <Form.Select style={{ width: "fit-content", height: "40px" }} aria-label="Choose priority" onChange={(e) => setPriority(e.target.value)}>
             <option value="all">All</option>
             <option value="high">High</option>

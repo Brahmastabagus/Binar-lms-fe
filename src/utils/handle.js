@@ -13,3 +13,15 @@ export const handleCheck = async ({ id, title, completed }, dispatch) => {
 
   }
 }
+export const handleLogout = (cookies, navigate) => {
+  cookies.remove("token", {
+    path: "/",
+    // expires: new Date(new Date().getTime() + 200 * 1000)
+  });
+  toast.danger("You have successfully logged out", optionToast);
+
+  setTimeout(() => {
+    navigate("/")
+  }, 2000);
+  // window.location.replace('/')
+}

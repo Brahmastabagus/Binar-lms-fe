@@ -1,7 +1,7 @@
-import { handleShowDelete } from "../utils/delete"
-import { handleCheck } from "../utils/handleCheck"
-import { handleShowUpdate } from "../utils/update"
-import { handleShowView } from "../utils/views"
+import { handleShowDelete } from "./delete"
+import { handleCheck } from "./handle"
+import { handleShowUpdate } from "./update"
+import { handleShowView } from "./views"
 
 const attributes = (data, index, dispatch, setShowView, setSelectData, setShowUpdate, setShowDelete, setIdDelete) => {
   return {
