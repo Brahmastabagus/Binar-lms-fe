@@ -18,10 +18,10 @@ export const handleLogout = (cookies, navigate) => {
     path: "/",
     // expires: new Date(new Date().getTime() + 200 * 1000)
   });
-  toast.danger("You have successfully logged out", optionToast);
+  toast.error("You have successfully logged out", optionToast);
 
   setTimeout(() => {
     navigate("/")
-    window.location.replace('/')
   }, 2000);
+  // window.location.replace('/')
 }
