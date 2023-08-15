@@ -22,6 +22,6 @@ export const handleLogout = (cookies, navigate) => {
 
   setTimeout(() => {
     navigate("/")
+    window.location.replace('/')
   }, 2000);
-  // window.location.replace('/')
 }
