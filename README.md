@@ -14,12 +14,13 @@ Available Account:
 # Table of contents  
 1. [Tech Stack](#tech-stack)  
 2. [Features](#features)
-3. [Run Locally](#run-locally)
-4. [Environment Variables](#environment-variables)
-5. [Mockup test answers](#mockup-test-answers)  
-    1. [Apakah Kegunaan JSON pada REST API?](#apakah-kegunaan-json-pada-rest-api?)
-    2. [Jelaskan bagaimana REST api bekerja?](#jelaskan-bagaimana-rest-api-bekerja?)  
-6. [Feedback](#feedback)  
+3. [Usage](#usage)
+4. [Run Locally](#run-locally)
+5. [Environment Variables](#environment-variables)
+6. [Mockup test answers](#mockup-test-answers)  
+    1. [Apakah Kegunaan JSON pada REST API?](#apakah-kegunaan-json-pada-rest-api)
+    2. [Jelaskan bagaimana REST api bekerja?](#jelaskan-bagaimana-rest-api-bekerja)  
+7. [Feedback](#feedback)  
 
 ## Tech Stack  
 
